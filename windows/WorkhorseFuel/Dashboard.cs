@@ -32,39 +32,86 @@ internal sealed class Dashboard : Form
 
     public Dashboard(WorkSettings settings, Action openSettings)
     {
+        SuspendLayout();
         this.settings = settings;
         Text = "牛马兴奋剂";
         AutoScaleDimensions = new SizeF(96, 96);
         AutoScaleMode = AutoScaleMode.Dpi;
-        ClientSize = new Size(366, 318);
+        AutoSize = true;
+        AutoSizeMode = AutoSizeMode.GrowAndShrink;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;
         BackColor = Surface;
         ForeColor = Ink;
         KeyPreview = true;
+        DoubleBuffered = true;
 
-        month = AddLabel("", 20, 15, 326, 34, 19, Ink, center: true, bold: true);
-        AddLabel("本月已赚", 20, 61, 326, 21, 10, Muted, center: true);
-        amount = AddLabel("", 14, 82, 338, 70, 10, Ink, center: true);
+        var content = new TableLayoutPanel
+        {
+            AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1, Dock = DockStyle.Fill, Padding = new Padding(24, 20, 24, 12),
+            MinimumSize = new Size(366, 0)
+        };
+        month = MakeLabel("", 20, Ink, bold: true);
+        month.Anchor = AnchorStyles.None;
+        month.Margin = new Padding(0, 0, 0, 20);
+        content.Controls.Add(month);
+
+        var caption = MakeLabel("本月已赚", 10, Muted);
+        caption.Anchor = AnchorStyles.None;
+        content.Controls.Add(caption);
+        amount = MakeLabel("", 38, Ink, bold: true);
         amount.Font = largeAmount;
-        state = AddLabel("", 21, 163, 160, 23, 10, Ink, bold: true);
-        percent = AddLabel("", 250, 163, 94, 23, 10, Muted);
-        percent.TextAlign = ContentAlignment.MiddleRight;
-        percent.AccessibleName = "本月计薪进度";
-        track = new Panel { Bounds = new Rectangle(22, 191, 322, 4), BackColor = Divider };
-        fill = new Panel { Bounds = Rectangle.Empty, BackColor = Accent };
-        track.Controls.Add(fill);
-        Controls.Add(track);
+        amount.Anchor = AnchorStyles.None;
+        amount.Margin = new Padding(0, 2, 0, 22);
+        content.Controls.Add(amount);
 
-        AddLabel("工作时段", 21, 210, 156, 20, 9, Muted);
-        hours = AddLabel("", 21, 231, 165, 23, 11, Ink);
-        detailTitle = AddLabel("", 200, 210, 144, 20, 9, Muted);
-        detail = AddLabel("", 200, 231, 144, 23, 11, Ink);
-        Controls.Add(new Panel { Bounds = new Rectangle(22, 268, 322, 1), BackColor = Divider });
-        AddButton("设置", 21, 278, 48, "打开设置", openSettings);
-        schedule = AddLabel("", 77, 278, 234, 29, 9, Muted);
-        AddButton("×", 314, 278, 30, "关闭面板", Hide);
+        var statusRow = MakeRow(2);
+        state = MakeLabel("", 10, Ink, bold: true);
+        percent = MakeLabel("", 10, Muted);
+        percent.Anchor = AnchorStyles.Right;
+        percent.AccessibleName = "本月计薪进度";
+        statusRow.Controls.Add(state, 0, 0);
+        statusRow.Controls.Add(percent, 1, 0);
+        content.Controls.Add(statusRow);
+        track = new Panel { Dock = DockStyle.Fill, Height = 4, Margin = new Padding(0, 6, 0, 18) };
+        track.BackColor = Divider;
+        fill = new Panel { BackColor = Accent };
+        track.Controls.Add(fill);
+        content.Controls.Add(track);
+
+        var details = MakeRow(2);
+        details.Controls.Add(MakeLabel("工作时段", 9, Muted), 0, 0);
+        detailTitle = MakeLabel("", 9, Muted);
+        details.Controls.Add(detailTitle, 1, 0);
+        hours = MakeLabel("", 11, Ink);
+        hours.Margin = new Padding(0, 4, 18, 0);
+        detail = MakeLabel("", 11, Ink);
+        detail.Margin = new Padding(0, 4, 0, 0);
+        details.Controls.Add(hours, 0, 1);
+        details.Controls.Add(detail, 1, 1);
+        content.Controls.Add(details);
+        content.Controls.Add(new Panel
+        {
+            Dock = DockStyle.Fill, Height = 1, BackColor = Divider, Margin = new Padding(0, 18, 0, 8)
+        });
+
+        var footer = MakeRow(3);
+        footer.ColumnStyles.Clear();
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        footer.Controls.Add(MakeButton("设置", "打开设置", openSettings), 0, 0);
+        schedule = MakeLabel("", 9, Muted);
+        schedule.Anchor = AnchorStyles.Left;
+        schedule.Margin = new Padding(10, 0, 10, 0);
+        footer.Controls.Add(schedule, 1, 0);
+        footer.Controls.Add(MakeButton("×", "关闭面板", Hide), 2, 0);
+        content.Controls.Add(footer);
+        Controls.Add(content);
+        RefreshSnapshot();
+        ResumeLayout(true);
 
         timer.Tick += (_, _) => RefreshSnapshot();
         VisibleChanged += (_, _) => timer.Enabled = Visible;
@@ -188,36 +235,37 @@ internal sealed class Dashboard : Form
 
     private static string FormatTime(int minute) => $"{minute / 60:00}:{minute % 60:00}";
 
-    private Label AddLabel(string text, int x, int y, int width, int height, int size, Color color,
-        bool center = false, bool bold = false)
+    private static TableLayoutPanel MakeRow(int columns)
     {
-        var label = new Label
+        var row = new TableLayoutPanel
         {
-            Text = text,
-            Bounds = new Rectangle(x, y, width, height),
-            Font = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular),
-            ForeColor = color,
-            AutoEllipsis = true,
-            TextAlign = center ? ContentAlignment.MiddleCenter : ContentAlignment.MiddleLeft
+            ColumnCount = columns, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Dock = DockStyle.Fill, Margin = Padding.Empty
         };
-        Controls.Add(label);
-        return label;
+        for (var i = 0; i < columns; i++)
+            row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / columns));
+        return row;
     }
 
-    private void AddButton(string text, int x, int y, int width, string label, Action action)
+    private static Label MakeLabel(string text, int size, Color color, bool bold = false) => new()
+    {
+        Text = text, AutoSize = true, Margin = Padding.Empty,
+        Font = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular),
+        ForeColor = color, TextAlign = ContentAlignment.MiddleLeft
+    };
+
+    private static Button MakeButton(string text, string label, Action action)
     {
         var button = new Button
         {
-            Text = text,
-            AccessibleName = label,
-            Bounds = new Rectangle(x, y, width, 29),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Surface,
-            ForeColor = Ink
+            Text = text, AccessibleName = label, AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink, Padding = new Padding(7, 4, 7, 4),
+            Margin = Padding.Empty, FlatStyle = FlatStyle.Flat,
+            Font = new Font("Segoe UI", 10), BackColor = Surface, ForeColor = Ink
         };
         button.FlatAppearance.BorderSize = 0;
         button.FlatAppearance.MouseOverBackColor = Divider;
         button.Click += (_, _) => action();
-        Controls.Add(button);
+        return button;
     }
 }

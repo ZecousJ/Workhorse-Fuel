@@ -21,6 +21,13 @@ jobs:
           dotnet-version: 10.0.x
       - name: Verify payroll
         run: dotnet run --project windows/Payroll.Tests -c Release
+      - name: Verify Windows layout
+        run: dotnet run --project windows/Layout.Tests -c Release -- layout
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: Windows-layout
+          path: layout/
       - name: Package Windows executables
         shell: pwsh
         run: |

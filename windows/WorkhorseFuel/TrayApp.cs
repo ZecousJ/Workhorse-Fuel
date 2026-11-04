@@ -23,10 +23,18 @@ internal sealed class TrayApp : ApplicationContext
             ContextMenuStrip = menu,
             Visible = true
         };
+        Application.Idle += ShowOnLaunch;
         tray.MouseClick += (_, e) =>
         {
             if (e.Button == MouseButtons.Left) dashboard.ShowNear(Cursor.Position);
         };
+    }
+
+    private void ShowOnLaunch(object? sender, EventArgs e)
+    {
+        Application.Idle -= ShowOnLaunch;
+        var area = Screen.PrimaryScreen!.WorkingArea;
+        dashboard.ShowNear(new Point(area.Right, area.Bottom));
     }
 
     private void ShowSettings()
@@ -44,6 +52,7 @@ internal sealed class TrayApp : ApplicationContext
     {
         if (disposing)
         {
+            Application.Idle -= ShowOnLaunch;
             tray.Dispose();
             menu.Dispose();
             dashboard.Dispose();
