@@ -42,7 +42,7 @@ internal sealed class SettingsPanel : UserControl
         BackColor = Color.Black;
         ForeColor = Color.White;
         Dock = DockStyle.Fill;
-        Font = new Font("Segoe UI", 10);
+        Font = new Font("Microsoft YaHei UI", 10);
 
         var content = Row(1);
         content.Padding = new Padding(24, 18, 24, 14);
@@ -56,7 +56,8 @@ internal sealed class SettingsPanel : UserControl
         header.Margin = new Padding(0, 0, 0, 20);
         var back = Button("‹", () => Cancelled?.Invoke());
         back.AccessibleName = "返回计数器";
-        back.Font = new Font("Segoe UI", 18);
+        back.TabStop = false;
+        back.Font = new Font("Microsoft YaHei UI", 18);
         back.Padding = new Padding(4, 0, 4, 0);
         header.Controls.Add(back, 0, 0);
         var title = Label("工资与排班", 17, Color.White, FontStyle.Bold);
@@ -117,7 +118,7 @@ internal sealed class SettingsPanel : UserControl
         }
         content.Controls.Add(segment);
         scheduleHint.AutoSize = true;
-        scheduleHint.Font = new Font("Segoe UI", 9);
+        scheduleHint.Font = new Font("Microsoft YaHei UI", 9);
         scheduleHint.ForeColor = Muted;
         scheduleHint.Margin = new Padding(0, 8, 0, 6);
         content.Controls.Add(scheduleHint);
@@ -129,7 +130,7 @@ internal sealed class SettingsPanel : UserControl
 
         hint.AutoSize = true;
         hint.MaximumSize = new Size(318, 0);
-        hint.Font = new Font("Segoe UI", 9);
+        hint.Font = new Font("Microsoft YaHei UI", 9);
         hint.ForeColor = Muted;
         hint.Margin = new Padding(0, 18, 0, 0);
         content.Controls.Add(hint);
@@ -175,7 +176,7 @@ internal sealed class SettingsPanel : UserControl
     }
 
     private static Label Label(string text, int size, Color color, FontStyle style = FontStyle.Regular) =>
-        new() { Text = text, AutoSize = true, ForeColor = color, Font = new Font("Segoe UI", size, style), Margin = Padding.Empty };
+        new() { Text = text, AutoSize = true, ForeColor = color, Font = new Font("Microsoft YaHei UI", size, style), Margin = Padding.Empty };
 
     private static Button Button(string text, Action action)
     {
@@ -194,7 +195,7 @@ internal sealed class SettingsPanel : UserControl
         input.BorderStyle = BorderStyle.None;
         input.BackColor = Field;
         input.ForeColor = Color.White;
-        input.Font = new Font("Segoe UI", 11);
+        input.Font = new Font("Microsoft YaHei UI", 11);
         void FitText()
         {
             var sample = input is MaskedTextBox ? "00:00" : "99999999.99";

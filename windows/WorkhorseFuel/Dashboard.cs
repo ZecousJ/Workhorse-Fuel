@@ -286,7 +286,7 @@ internal sealed class Dashboard : Form
     private static Label MakeLabel(string text, int size, Color color, bool bold = false) => new()
     {
         Text = text, AutoSize = true, Margin = Padding.Empty,
-        Font = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular),
+        Font = new Font("Microsoft YaHei UI", size, bold ? FontStyle.Bold : FontStyle.Regular),
         ForeColor = color, TextAlign = ContentAlignment.MiddleLeft
     };
 
@@ -297,7 +297,7 @@ internal sealed class Dashboard : Form
             Text = text, AccessibleName = label, AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink, Padding = new Padding(7, 4, 7, 4),
             Margin = Padding.Empty, FlatStyle = FlatStyle.Flat,
-            Font = new Font("Segoe UI", 10), BackColor = Surface, ForeColor = Ink
+            Font = new Font("Microsoft YaHei UI", 10), BackColor = Surface, ForeColor = Ink
         };
         button.FlatAppearance.BorderSize = 0;
         button.FlatAppearance.MouseOverBackColor = Divider;
