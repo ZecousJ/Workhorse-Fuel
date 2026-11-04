@@ -290,17 +290,13 @@ internal sealed class Dashboard : Form
         ForeColor = color, TextAlign = ContentAlignment.MiddleLeft
     };
 
-    private static Button MakeButton(string text, string label, Action action)
+    private static ChromeButton MakeButton(string text, string label, Action action)
     {
-        var button = new Button
+        var button = new ChromeButton
         {
-            Text = text, AccessibleName = label, AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink, Padding = new Padding(7, 4, 7, 4),
-            Margin = Padding.Empty, FlatStyle = FlatStyle.Flat,
-            Font = new Font("Microsoft YaHei UI", 10), BackColor = Surface, ForeColor = Ink
+            Text = text, AccessibleName = label, Padding = new Padding(6, 4, 6, 4),
+            Margin = Padding.Empty, Font = new Font("Microsoft YaHei UI", 10), ForeColor = Ink
         };
-        button.FlatAppearance.BorderSize = 0;
-        button.FlatAppearance.MouseOverBackColor = Divider;
         button.Click += (_, _) => action();
         return button;
     }

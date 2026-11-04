@@ -140,7 +140,7 @@ internal sealed class SettingsPanel : UserControl
         note.Anchor = AnchorStyles.Left;
         footer.Controls.Add(note, 0, 0);
         var save = Button("保存设置", Save);
-        save.BackColor = Accent;
+        save.FillColor = Accent;
         save.Anchor = AnchorStyles.Right;
         save.Padding = new Padding(14, 6, 14, 6);
         footer.Controls.Add(save, 1, 0);
@@ -178,14 +178,12 @@ internal sealed class SettingsPanel : UserControl
     private static Label Label(string text, int size, Color color, FontStyle style = FontStyle.Regular) =>
         new() { Text = text, AutoSize = true, ForeColor = color, Font = new Font("Microsoft YaHei UI", size, style), Margin = Padding.Empty };
 
-    private static Button Button(string text, Action action)
+    private static ChromeButton Button(string text, Action action)
     {
-        var button = new Button
+        var button = new ChromeButton
         {
-            Text = text, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlatStyle = FlatStyle.Flat, ForeColor = Color.White, BackColor = Color.Black, Margin = Padding.Empty
+            Text = text, ForeColor = Color.White, Margin = Padding.Empty
         };
-        button.FlatAppearance.BorderSize = 0;
         button.Click += (_, _) => action();
         return button;
     }

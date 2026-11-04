@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../WorkhorseFuel/ChromeButton.cs" Link="ChromeButton.cs" />
     <Compile Include="../WorkhorseFuel/Dashboard.cs" Link="Dashboard.cs" />
     <Compile Include="../WorkhorseFuel/RollingAmount.cs" Link="RollingAmount.cs" />
     <Compile Include="../WorkhorseFuel/WindowsShell.cs" Link="WindowsShell.cs" />
