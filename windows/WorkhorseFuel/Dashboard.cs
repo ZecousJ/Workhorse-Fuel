@@ -121,7 +121,7 @@ internal sealed class Dashboard : Form
 
         timer.Tick += (_, _) => RefreshSnapshot();
         VisibleChanged += (_, _) => timer.Enabled = Visible && editor is null;
-        Deactivate += (_, _) => Hide();
+        Deactivate += (_, _) => { if (editor is null) Hide(); };
         KeyDown += (_, e) =>
         {
             if (e.KeyCode != Keys.Escape) return;
@@ -154,8 +154,10 @@ internal sealed class Dashboard : Form
             ReturnToCounter();
         };
         SuspendLayout();
-        Controls.Remove(counter);
         Controls.Add(editor);
+        counter.Visible = false;
+        editor.BringToFront();
+        editor.SelectNextControl(null, true, true, true, false);
         ResumeLayout(true);
         if (Visible) PositionAtAnchor();
     }
@@ -164,10 +166,12 @@ internal sealed class Dashboard : Form
     {
         if (editor is null) return;
         SuspendLayout();
+        counter.Visible = true;
+        counter.BringToFront();
+        counter.SelectNextControl(null, true, true, true, false);
         Controls.Remove(editor);
         editor.Dispose();
         editor = null;
-        Controls.Add(counter);
         ResumeLayout(true);
         RefreshSnapshot();
         timer.Enabled = Visible;

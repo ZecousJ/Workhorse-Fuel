@@ -32,7 +32,7 @@ internal static class Program
             CaptureAndCheck(dashboard, Path.Combine(folder, $"dashboard-{scale:0.0}.png"));
 
             dashboard.OpenSettings();
-            EnlargeFonts(dashboard.Controls[0], scale);
+            EnlargeFonts(dashboard.Controls.OfType<SettingsPanel>().Single(), scale);
             if (Application.OpenForms.Count != 1)
                 throw new InvalidOperationException("Settings opened another window.");
             dashboard.PerformLayout();
@@ -78,6 +78,7 @@ internal static class Program
     {
         foreach (Control child in parent.Controls)
         {
+            if (parent is Dashboard && child is not SettingsPanel && parent.Controls.OfType<SettingsPanel>().Any()) continue;
             yield return child;
             foreach (var nested in Descendants(child)) yield return nested;
         }
