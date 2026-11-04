@@ -195,6 +195,13 @@ internal sealed class SettingsPanel : UserControl
         input.BackColor = Field;
         input.ForeColor = Color.White;
         input.Font = new Font("Segoe UI", 11);
+        void FitText()
+        {
+            var sample = input is MaskedTextBox ? "00:00" : "99999999.99";
+            input.MinimumSize = new Size(TextRenderer.MeasureText(sample, input.Font).Width + 8, 0);
+        }
+        input.FontChanged += (_, _) => FitText();
+        FitText();
         input.Anchor = AnchorStyles.Right;
         input.Margin = new Padding(8, 0, 0, 0);
         var field = Row(2);
