@@ -1,0 +1,49 @@
+name: Windows
+
+on:
+  push:
+    branches: [main]
+    paths: ['windows/**', '.github/workflows/windows.yml']
+  pull_request:
+    paths: ['windows/**', '.github/workflows/windows.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Verify payroll
+        run: dotnet run --project windows/Payroll.Tests -c Release
+      - name: Package Windows executables
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path release | Out-Null
+          foreach ($rid in 'win-x64', 'win-arm64') {
+            $out = Join-Path $env:RUNNER_TEMP "workhorse-$rid"
+            dotnet publish windows/WorkhorseFuel -c Release -r $rid --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -o $out
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $exe = Join-Path $out 'WorkhorseFuel.exe'
+            if ($rid -eq 'win-x64') {
+              $process = Start-Process -FilePath $exe -PassThru
+              try {
+                if ($process.WaitForExit(5000)) {
+                  throw "Workhorse Fuel exited during startup (exit code $($process.ExitCode))."
+                }
+              } finally {
+                if (!$process.HasExited) { Stop-Process -Id $process.Id }
+              }
+            }
+            Compress-Archive -LiteralPath $exe -DestinationPath "release/Workhorse-Fuel-$rid.zip"
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Windows-packages
+          path: release/*.zip
+          if-no-files-found: error
