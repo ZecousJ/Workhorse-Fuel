@@ -7,6 +7,7 @@ internal static class Program
     {
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.EnableVisualStyles();
+        Application.SetColorMode(SystemColorMode.Dark);
         Application.SetCompatibleTextRenderingDefault(false);
         var area = new Rectangle(0, 0, 1920, 1040);
         var overflow = new Rectangle(1700, 800, 200, 220);
@@ -23,19 +24,19 @@ internal static class Program
         var settings = WorkSettings.Default with { Salary = 25000, Schedule = Workweek.Alternating };
         foreach (var scale in new[] { 1f, 1.5f, 2f })
         {
-            using var dashboard = new Dashboard(settings, () => {});
+            using var dashboard = new Dashboard(settings);
             dashboard.ShowNear(new Point(Screen.PrimaryScreen!.WorkingArea.Right, Screen.PrimaryScreen.WorkingArea.Bottom));
             dashboard.Hide();
             EnlargeFonts(dashboard, scale);
             dashboard.PerformLayout();
             CaptureAndCheck(dashboard, Path.Combine(folder, $"dashboard-{scale:0.0}.png"));
 
-            using var dialog = new SettingsDialog(settings);
-            dialog.Show();
-            dialog.Hide();
-            EnlargeFonts(dialog, scale);
-            dialog.PerformLayout();
-            CaptureAndCheck(dialog, Path.Combine(folder, $"settings-{scale:0.0}.png"));
+            dashboard.OpenSettings();
+            EnlargeFonts(dashboard.Controls[0], scale);
+            if (Application.OpenForms.Count != 1)
+                throw new InvalidOperationException("Settings opened another window.");
+            dashboard.PerformLayout();
+            CaptureAndCheck(dashboard, Path.Combine(folder, $"settings-{scale:0.0}.png"));
         }
         VerifyAnimation(folder);
         File.WriteAllText(Path.Combine(folder, "result.txt"), "Layout checks passed at 100%, 150%, and 200% font sizes.");

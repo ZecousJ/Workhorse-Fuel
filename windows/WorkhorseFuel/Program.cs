@@ -8,6 +8,7 @@ internal static class Program
         using var instance = new Mutex(true, @"Local\WorkhorseFuel", out var firstInstance);
         if (!firstInstance) return;
         ApplicationConfiguration.Initialize();
+        Application.SetColorMode(SystemColorMode.Dark);
         using var app = new TrayApp();
         Application.Run(app);
     }

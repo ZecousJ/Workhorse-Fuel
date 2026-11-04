@@ -30,9 +30,11 @@ internal sealed class Dashboard : Form
     private Rectangle anchor;
     private Rectangle workArea;
 
-    private bool editing;
+    private readonly Control counter;
+    private SettingsPanel? editor;
+    public event Action<WorkSettings>? SettingsChanged;
 
-    public Dashboard(WorkSettings settings, Action openSettings)
+    public Dashboard(WorkSettings settings)
     {
         SuspendLayout();
         this.settings = settings;
@@ -105,24 +107,26 @@ internal sealed class Dashboard : Form
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        footer.Controls.Add(MakeButton("设置", "打开设置", openSettings), 0, 0);
+        footer.Controls.Add(MakeButton("设置", "打开设置", OpenSettings), 0, 0);
         schedule = MakeLabel("", 9, Muted);
         schedule.Anchor = AnchorStyles.Left;
         schedule.Margin = new Padding(10, 0, 10, 0);
         footer.Controls.Add(schedule, 1, 0);
         footer.Controls.Add(MakeButton("×", "关闭面板", Hide), 2, 0);
         content.Controls.Add(footer);
-        Controls.Add(content);
+        counter = content;
+        Controls.Add(counter);
         RefreshSnapshot();
         ResumeLayout(true);
 
         timer.Tick += (_, _) => RefreshSnapshot();
-        VisibleChanged += (_, _) => timer.Enabled = Visible;
-        Deactivate += (_, _) => { if (!editing) Hide(); };
+        VisibleChanged += (_, _) => timer.Enabled = Visible && editor is null;
+        Deactivate += (_, _) => Hide();
         KeyDown += (_, e) =>
         {
             if (e.KeyCode != Keys.Escape) return;
-            Hide();
+            if (editor is not null) ReturnToCounter();
+            else Hide();
             e.Handled = true;
         };
     }
@@ -137,11 +141,37 @@ internal sealed class Dashboard : Form
         Activate();
     }
 
-    public DialogResult EditSettings(SettingsDialog dialog)
+    public void OpenSettings()
     {
-        editing = true;
-        try { return dialog.ShowDialog(this); }
-        finally { editing = false; }
+        if (editor is not null) return;
+        timer.Stop();
+        editor = new SettingsPanel(settings);
+        editor.Cancelled += ReturnToCounter;
+        editor.Saved += updated =>
+        {
+            UpdateSettings(updated);
+            SettingsChanged?.Invoke(updated);
+            ReturnToCounter();
+        };
+        SuspendLayout();
+        Controls.Remove(counter);
+        Controls.Add(editor);
+        ResumeLayout(true);
+        if (Visible) PositionAtAnchor();
+    }
+
+    private void ReturnToCounter()
+    {
+        if (editor is null) return;
+        SuspendLayout();
+        Controls.Remove(editor);
+        editor.Dispose();
+        editor = null;
+        Controls.Add(counter);
+        ResumeLayout(true);
+        RefreshSnapshot();
+        timer.Enabled = Visible;
+        if (Visible) PositionAtAnchor();
     }
 
     public void UpdateSettings(WorkSettings updated)
@@ -163,6 +193,7 @@ internal sealed class Dashboard : Form
         if (disposing)
         {
             timer.Dispose();
+            if (counter.Parent is null) counter.Dispose();
             largeAmount.Dispose();
             compactAmount.Dispose();
         }

@@ -10,7 +10,8 @@ internal sealed class TrayApp : ApplicationContext
 
     public TrayApp()
     {
-        dashboard = new Dashboard(settings, ShowSettings);
+        dashboard = new Dashboard(settings);
+        dashboard.SettingsChanged += updated => settings = updated;
         menu.Items.Add("打开计数器", null, (_, _) => dashboard.ShowNear(Cursor.Position));
         menu.Items.Add("设置", null, (_, _) => ShowSettings());
         menu.Items.Add(new ToolStripSeparator());
@@ -40,12 +41,7 @@ internal sealed class TrayApp : ApplicationContext
     private void ShowSettings()
     {
         if (!dashboard.Visible) dashboard.ShowNear(Cursor.Position);
-        using var dialog = new SettingsDialog(settings);
-        if (dashboard.EditSettings(dialog) == DialogResult.OK && dialog.Result is { } updated)
-        {
-            settings = updated;
-            dashboard.UpdateSettings(settings);
-        }
+        dashboard.OpenSettings();
     }
 
     protected override void Dispose(bool disposing)
