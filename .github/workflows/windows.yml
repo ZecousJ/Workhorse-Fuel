@@ -42,7 +42,7 @@ jobs:
             }
             Compress-Archive -LiteralPath $exe -DestinationPath "release/Workhorse-Fuel-$rid.zip"
           }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Windows-packages
           path: release/*.zip
