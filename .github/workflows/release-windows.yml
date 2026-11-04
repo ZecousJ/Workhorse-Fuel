@@ -1,0 +1,33 @@
+name: Upload Windows release packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+        type: string
+      build_run:
+        description: Run ID of a successful Windows build
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: Windows-packages
+          run-id: ${{ inputs.build_run }}
+          github-token: ${{ github.token }}
+          path: release
+      - name: Attach packages to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: gh release upload "$RELEASE_TAG" release/*.zip --repo "$GITHUB_REPOSITORY"
