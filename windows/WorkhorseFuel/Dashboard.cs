@@ -4,7 +4,8 @@ namespace WorkhorseFuel;
 
 internal sealed class Dashboard : Form
 {
-    private static readonly Color Surface = Color.FromArgb(35, 34, 38);
+    private static readonly Color Surface = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22621)
+        ? Color.Black : Color.FromArgb(35, 34, 38);
     private static readonly Color Ink = Color.FromArgb(249, 247, 247);
     private static readonly Color Muted = Color.FromArgb(191, 187, 195);
     private static readonly Color Divider = Color.FromArgb(66, 63, 72);
@@ -26,7 +27,8 @@ internal sealed class Dashboard : Form
     private readonly Panel fill;
     private WorkSettings settings;
     private PayrollMonth? ledger;
-    private Point anchor;
+    private Rectangle anchor;
+    private Rectangle workArea;
 
     private bool editing;
 
@@ -41,6 +43,7 @@ internal sealed class Dashboard : Form
         AutoSizeMode = AutoSizeMode.GrowAndShrink;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
+        TopMost = true;
         StartPosition = FormStartPosition.Manual;
         BackColor = Surface;
         ForeColor = Ink;
@@ -126,7 +129,7 @@ internal sealed class Dashboard : Form
 
     public void ShowNear(Point trayPoint)
     {
-        anchor = trayPoint;
+        (workArea, anchor) = WindowsShell.PlacementArea(trayPoint);
         RefreshSnapshot();
         PositionAtAnchor();
         Show();
@@ -165,19 +168,17 @@ internal sealed class Dashboard : Form
         }
     }
 
-    private void PositionAtAnchor()
+    protected override void OnHandleCreated(EventArgs e)
     {
-        var area = Screen.FromPoint(anchor).WorkingArea;
-        var margin = LogicalToDeviceUnits(8);
-        var above = anchor.Y >= area.Top + area.Height / 2;
-        var desiredY = above ? Math.Min(anchor.Y, area.Bottom) - Height - margin : Math.Max(anchor.Y, area.Top) + margin;
-        Location = new Point(
-            ClampToArea(anchor.X - Width / 2, area.Left + margin, area.Right - Width - margin),
-            ClampToArea(desiredY, area.Top + margin, area.Bottom - Height - margin));
+        base.OnHandleCreated(e);
+        if (!WindowsShell.ApplyBackdrop(Handle))
+            BackColor = Color.FromArgb(35, 34, 38);
     }
 
-    private static int ClampToArea(int position, int minimum, int maximum) =>
-        Math.Clamp(position, minimum, Math.Max(minimum, maximum));
+    private void PositionAtAnchor()
+    {
+        Location = WindowsShell.PlacePopup(Size, workArea, anchor, LogicalToDeviceUnits(10));
+    }
 
     private void RefreshSnapshot()
     {

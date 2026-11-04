@@ -8,6 +8,16 @@ internal static class Program
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
+        var area = new Rectangle(0, 0, 1920, 1040);
+        var overflow = new Rectangle(1700, 800, 200, 220);
+        var popup = new Rectangle(WindowsShell.PlacePopup(new Size(366, 350), area, overflow, 10), new Size(366, 350));
+        if (!area.Contains(popup) || overflow.IntersectsWith(popup))
+            throw new InvalidOperationException("Popup overlaps the taskbar overflow.");
+        var taskbarPoint = new Rectangle(1890, 1060, 1, 1);
+        popup.Location = WindowsShell.PlacePopup(popup.Size, area, taskbarPoint, 10);
+        if (!area.Contains(popup))
+            throw new InvalidOperationException("Popup extends into the taskbar.");
+
         var folder = args.Length > 0 ? args[0] : "layout";
         Directory.CreateDirectory(folder);
         var settings = WorkSettings.Default with { Salary = 25000, Schedule = Workweek.Alternating };
