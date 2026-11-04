@@ -30,6 +30,20 @@ internal static class WindowsShell
     [DllImport("dwmapi.dll")]
     private static extern int DwmExtendFrameIntoClientArea(nint window, ref Margins margins);
 
+    [DllImport("user32.dll")]
+    private static extern bool SystemParametersInfo(uint action, uint parameter,
+        [MarshalAs(UnmanagedType.Bool)] ref bool value, uint flags);
+
+    public static bool AnimationsEnabled
+    {
+        get
+        {
+            var enabled = true;
+            SystemParametersInfo(0x1042, 0, ref enabled, 0);
+            return enabled;
+        }
+    }
+
     public static bool ApplyBackdrop(nint window)
     {
         if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22621)) return false;

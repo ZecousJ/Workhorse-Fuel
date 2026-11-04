@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../WorkhorseFuel/Dashboard.cs" Link="Dashboard.cs" />
+    <Compile Include="../WorkhorseFuel/RollingAmount.cs" Link="RollingAmount.cs" />
     <Compile Include="../WorkhorseFuel/WindowsShell.cs" Link="WindowsShell.cs" />
     <Compile Include="../WorkhorseFuel/Payroll.cs" Link="Payroll.cs" />
     <Compile Include="../WorkhorseFuel/SettingsDialog.cs" Link="SettingsDialog.cs" />

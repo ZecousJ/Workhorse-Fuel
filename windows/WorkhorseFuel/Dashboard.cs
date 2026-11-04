@@ -16,7 +16,7 @@ internal sealed class Dashboard : Form
     private readonly Font largeAmount = new("Segoe UI", 38, FontStyle.Bold);
     private readonly Font compactAmount = new("Segoe UI", 29, FontStyle.Bold);
     private readonly Label month;
-    private readonly Label amount;
+    private readonly RollingAmount amount;
     private readonly Label state;
     private readonly Label percent;
     private readonly Label schedule;
@@ -64,7 +64,7 @@ internal sealed class Dashboard : Form
         var caption = MakeLabel("本月已赚", 10, Muted);
         caption.Anchor = AnchorStyles.None;
         content.Controls.Add(caption);
-        amount = MakeLabel("", 38, Ink, bold: true);
+        amount = new RollingAmount { ForeColor = Ink, Margin = Padding.Empty };
         amount.Font = largeAmount;
         amount.Anchor = AnchorStyles.None;
         amount.Margin = new Padding(0, 2, 0, 22);

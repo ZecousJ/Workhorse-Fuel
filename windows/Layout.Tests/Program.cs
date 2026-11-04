@@ -37,7 +37,40 @@ internal static class Program
             dialog.PerformLayout();
             CaptureAndCheck(dialog, Path.Combine(folder, $"settings-{scale:0.0}.png"));
         }
+        VerifyAnimation(folder);
         File.WriteAllText(Path.Combine(folder, "result.txt"), "Layout checks passed at 100%, 150%, and 200% font sizes.");
+    }
+
+    private static void VerifyAnimation(string folder)
+    {
+        using var window = new Form { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
+        using var amount = new RollingAmount
+        {
+            Text = "¥ 1,234.56", Font = new Font("Segoe UI", 38), ForeColor = Color.White, BackColor = Color.Black
+        };
+        window.Controls.Add(amount);
+        window.Show();
+        Application.DoEvents();
+        amount.Text = "¥ 1,234.57";
+        Thread.Sleep(60);
+        Application.DoEvents();
+        using var middle = new Bitmap(amount.Width, amount.Height);
+        amount.DrawToBitmap(middle, amount.ClientRectangle);
+        middle.Save(Path.Combine(folder, "animation-middle.png"));
+        Thread.Sleep(200);
+        Application.DoEvents();
+        using var finished = new Bitmap(amount.Width, amount.Height);
+        amount.DrawToBitmap(finished, amount.ClientRectangle);
+        finished.Save(Path.Combine(folder, "animation-finished.png"));
+        if (WindowsShell.AnimationsEnabled)
+        {
+            var changed = false;
+            for (var y = 0; y < middle.Height && !changed; y++)
+                for (var x = 0; x < middle.Width && !changed; x++)
+                    changed = middle.GetPixel(x, y) != finished.GetPixel(x, y);
+            if (!changed) throw new InvalidOperationException("The amount did not animate.");
+        }
+        window.Hide();
     }
 
     private static IEnumerable<Control> Descendants(Control parent)
@@ -67,7 +100,7 @@ internal static class Program
             if (control.Right > control.Parent!.ClientSize.Width || control.Bottom > control.Parent.ClientSize.Height)
                 throw new InvalidOperationException($"Control outside parent: {control.GetType().Name} {control.Text}");
         }
-        foreach (var label in Descendants(form).OfType<Label>())
+        foreach (var label in Descendants(form).Where(control => control is Label or RollingAmount))
         {
             var preferred = label.GetPreferredSize(Size.Empty);
             if (label.Width < preferred.Width || label.Height < preferred.Height)
