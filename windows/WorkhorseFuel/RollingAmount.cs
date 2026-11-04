@@ -89,7 +89,7 @@ internal sealed class RollingAmount : Control
             if (char.IsDigit(next) && old != next && progress < 1)
             {
                 var direction = increasing ? -1 : 1;
-                DrawGlyph(e.Graphics, old, x, (int)Math.Round(direction * progress * Height));
+                DrawGlyph(e.Graphics, char.IsDigit(old) ? old : ' ', x, (int)Math.Round(direction * progress * Height));
                 DrawGlyph(e.Graphics, next, x, (int)Math.Round(direction * (progress - 1) * Height));
             }
             else DrawGlyph(e.Graphics, next, x, 0);
